@@ -18,6 +18,7 @@ Install packages:
 * SharedArrays 
 * Statistics
 * Random
+
 Some of these are already included in Julia but idk which ones.
 My advice is just running the script and see what's wrong
 
