@@ -5,6 +5,13 @@ addprocs(15)
 # Apply imports to all threads
 @everywhere using Images, FileIO, Colors, ImageCore, SharedArrays, Statistics, Random
 
+# Constants
+imageFile = "melee.png"
+@everywhere stencilWidth = 64
+@everywhere stencilHeight = 64
+@everywhere stencilDirectory = "stencils2"
+
+
 # Loads an Image into either an array or SharedArray, could be cleaned up
 @everywhere function loadImage(file, type)
     tmp = permuteddimsview(rawview(channelview(load(file))), (2,3,1))
@@ -31,7 +38,7 @@ end
 
 # These are both SharedArrays so are shared between all processes
 # img contains the pixel data of the ground truth
-img = loadImage("melee.png", "image")
+img = loadImage(imageFile, "image")
 # result is completely black right now but will be the reconstructed image
 result = SharedArray{Int64}(size(img));
 
@@ -39,9 +46,6 @@ result = SharedArray{Int64}(size(img));
 # a lot of file reading on startup. I haven't bothered fixing it as it probably doesn't affect
 # performance during iteration. Maybe some CPU cache optimizations could be found if there is a way to share all
 # stencils between processes.
-@everywhere stencilWidth = 64
-@everywhere stencilHeight = 64
-@everywhere stencilDirectory = "stencils2"
 @everywhere stencilData = [loadImage(string(stencilDirectory, "/", file), "stencil") for file in readdir(stencilDirectory)]
 # Turn stencils into a list of tuples having 3 values
 # 1. The color data of the stencil
