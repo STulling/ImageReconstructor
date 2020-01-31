@@ -27,7 +27,7 @@ end
 # You can also not include the division but in this case I like it more since
 # this keeps the error kinda normalized between images of differing sizes.
 # Removing the division likely speeds up the iteration.
-@everywhere msd(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = abs2(a - b) / length(a);
+@everywhere msd(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = sum(abs2.(a - b)) / length(a);
 
 # These are both SharedArrays so are shared between all processes
 # img contains the pixel data of the ground truth
