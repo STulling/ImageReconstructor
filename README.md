@@ -10,6 +10,7 @@ This program turns an ordinary image and one or multiple stencils into an image 
 Any OS I guess:
 
 Install [Julia](https://julialang.org/)
+
 Install packages:
 * Images
 * FileIO
