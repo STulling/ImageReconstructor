@@ -59,3 +59,5 @@ Any other stuff is also cool.
 ## Contributors
 
 Simon Tulling – simon.tulling99@gmail.com – u/JanDoedelGaming
+
+Don't hesitate to contact me or make an issue for any issues with the code.
