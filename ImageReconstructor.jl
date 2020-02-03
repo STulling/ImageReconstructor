@@ -6,9 +6,9 @@ addprocs(15)
 @everywhere using Images, FileIO, Colors, ImageCore, SharedArrays, Statistics, Random
 
 # Constants
-imageFile = "melee.png"
-@everywhere stencilWidth = 64
-@everywhere stencilHeight = 64
+imageFile = "melee.jpg"
+@everywhere stencilWidth = 30
+@everywhere stencilHeight = 40
 @everywhere stencilDirectory = "stencils2"
 
 
@@ -112,7 +112,7 @@ end
 function genImage()
     # @sync makes sure the program will only continue once all theads are done.
     # @distibuted makes the for loop run on all threads
-    @sync @distributed for i in 1:16000000
+    @sync @distributed for i in 1:1600000
         # Get a random position and stencil
         (pos, pos2, opacity, pixels) = getStencil()
         # Apply the stencil to a temporarily
@@ -138,14 +138,16 @@ function initialfill()
     # @sync makes sure the program will only continue once all theads are done.
     # @distibuted makes the for loop run on all threads
     # for all x
-    @sync @distributed for i in shuffle(1:size(img, 1)-stencilWidth)
+    @sync @distributed for pos in shuffle(1:((size(img, 1)-stencilWidth) * (size(img, 2)-stencilHeight))) #shuffle(1:size(img, 1)-stencilWidth)
         # for all y
-        for j in shuffle(1:size(img, 2)-stencilHeight)
+        #for j in shuffle(1:size(img, 2)-stencilHeight)
+            i = pos % (size(img, 1)-stencilWidth) + 1
+            j = pos ÷ (size(img, 1)-stencilWidth) + 1
             # Get the stenicl that corresponds to that location
             (opacity, pixels) = getStencil(i, j)
             # Just add it, no checking for improvements
             result[i:i+stencilWidth-1, j:j+stencilHeight-1, :] = result[i:i+stencilWidth-1, j:j+stencilHeight-1, :] .* (1 .- opacity) .+ opacity .* pixels
-        end
+        #end
     end
 end
 
