@@ -11,17 +11,10 @@ Any OS I guess:
 
 Install [Julia](https://julialang.org/)
 
-Install packages:
-* Images
-* FileIO
-* Colors
-* ImageCore
-* SharedArrays 
-* Statistics
-* Random
-
-Some of these are already included in Julia but idk which ones.
-My advice is just running the script and see what's wrong
+Instantiate the project environment:
+```sh
+julia --project=@. -e "using Pkg; Pkg.instantiate()"
+```
 
 If everything is set up, just edit some constants in ImageReconstructor.jl and run it
 
