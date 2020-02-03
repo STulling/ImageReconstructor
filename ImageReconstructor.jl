@@ -3,6 +3,9 @@ using Distributed
 if length(procs()) < Threads.nthreads()
     addprocs(Threads.nthreads() - length(procs()))
 end
+# Activate environment and download required packages.
+@everywhere using Pkg
+@everywhere Pkg.activate(@__DIR__)
 # Anything with @everywhere will be availible to every thread
 # Apply imports to all threads
 @everywhere using Images, FileIO, Colors, ImageCore, SharedArrays, Statistics, Random
