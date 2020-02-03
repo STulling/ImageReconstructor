@@ -1,6 +1,8 @@
 using Distributed
-# Add threads, since my PC has 16 threads I add 15 to the current thread to get 16 total threads
-addprocs(15)
+# Add as many threads as possible
+if length(procs()) < Threads.nthreads()
+    addprocs(Threads.nthreads() - length(procs()))
+end
 # Anything with @everywhere will be availible to every thread
 # Apply imports to all threads
 @everywhere using Images, FileIO, Colors, ImageCore, SharedArrays, Statistics, Random
