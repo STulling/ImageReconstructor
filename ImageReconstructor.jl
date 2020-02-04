@@ -11,10 +11,10 @@ end
 @everywhere using Images, FileIO, Colors, ImageCore, SharedArrays, Statistics, Random
 
 # Constants
-imageFile = "melee.jpg"
-@everywhere stencilWidth = 64
-@everywhere stencilHeight = 64
-@everywhere stencilDirectory = "stencils"
+const imageFile = "melee.jpg"
+@everywhere const stencilWidth = 64
+@everywhere const stencilHeight = 64
+@everywhere const stencilDirectory = "stencils"
 
 
 # Loads an Image into either an array or SharedArray, could be cleaned up
@@ -51,7 +51,7 @@ result = SharedArray{UInt8}(size(img));
 # a lot of file reading on startup. I haven't bothered fixing it as it probably doesn't affect
 # performance during iteration. Maybe some CPU cache optimizations could be found if there is a way to share all
 # stencils between processes.
-@everywhere stencilData = [loadImage(string(stencilDirectory, "/", file), "stencil") for file in readdir(stencilDirectory) if occursin(r"\.(gif|jpe?g|png)$", file)]
+@everywhere const stencilData = [loadImage(string(stencilDirectory, "/", file), "stencil") for file in readdir(stencilDirectory) if occursin(r"\.(gif|jpe?g|png)$", file)]
 # Turn stencils into a list of tuples having 3 values
 # 1. The color data of the stencil
 # 2. The opacity data of the stencil
@@ -65,7 +65,7 @@ result = SharedArray{UInt8}(size(img));
     average::Array{Float64, 3}
 end
 
-@everywhere stencils = 
+@everywhere const stencils = 
 [
     Stencil(
         stencil[:,:,1:3], 
