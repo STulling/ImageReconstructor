@@ -1,7 +1,7 @@
 using Distributed
 # Add as many threads as possible
-if length(procs()) < Threads.nthreads()
-    addprocs(Threads.nthreads() - length(procs()))
+if length(procs()) < Sys.CPU_THREADS
+    addprocs(Sys.CPU_THREADS - length(procs()))
 end
 # Activate environment and download required packages.
 @everywhere using Pkg
@@ -12,9 +12,9 @@ end
 
 # Constants
 imageFile = "melee.jpg"
-@everywhere stencilWidth = 30
-@everywhere stencilHeight = 40
-@everywhere stencilDirectory = "stencils2"
+@everywhere stencilWidth = 24
+@everywhere stencilHeight = 24
+@everywhere stencilDirectory = "stencils"
 
 
 # Loads an Image into either an array or SharedArray, could be cleaned up
@@ -58,11 +58,18 @@ result = SharedArray{Int64}(size(img));
 # 3. The average color of the stencil
 #
 # This can probably be made better by using structs or something.
+
+@everywhere struct Stencil
+    color::Array{UInt8, 3}
+    opacity::Array{UInt8, 3}
+    average::Array{Float64, 3}
+end
+
 @everywhere stencils = 
 [
-    (
+    Stencil(
         stencil[:,:,1:3], 
-        repeat(convert(Array{Int64}, stencil[:,:,4] / 255), outer = (1, 1, 3)), 
+        repeat(convert(Array{UInt8}, stencil[:,:,4] / 255), outer = (1, 1, 3)), 
         reshape([
             Statistics.mean(stencil[:,:,1][stencil[:,:,4] .== 255])
             Statistics.mean(stencil[:,:,2][stencil[:,:,4] .== 255])
@@ -76,10 +83,10 @@ result = SharedArray{Int64}(size(img));
 # Maybe there's a better way to do this but it's fine imo
 @everywhere function choose(target, stencils)
     if length(stencils) > 1
-        best = 9999
+        best = 99999999
         bestStencil = nothing
         for stencil in stencils
-            this = msd(stencil[3], target)
+            this = msd(stencil.average, target)
             if this < best
                 best = this
                 bestStencil = stencil
@@ -101,7 +108,7 @@ end
     pos2 = pos + [stencilWidth-1; stencilHeight-1]
     target = getAverageColor(img, pos[1], pos[2], pos2[1], pos2[2])
     stencil = choose(target, stencils)
-    return pos, pos2, stencil[2], stencil[1]
+    return pos, pos2, stencil.opacity, stencil.color
 end
 
 # Gets a stencil based on the input coordinates
@@ -110,14 +117,14 @@ end
     pos2 = pos + [stencilWidth-1; stencilHeight-1]
     target = getAverageColor(img, pos[1], pos[2], pos2[1], pos2[2])
     stencil = choose(target, stencils)
-    return stencil[2], stencil[1]
+    return stencil.opacity, stencil.color
 end
 
 # Recreates the images
 function genImage()
     # @sync makes sure the program will only continue once all theads are done.
     # @distibuted makes the for loop run on all threads
-    @sync @distributed for i in 1:1600000
+    @inbounds @sync @distributed for i in 1:1600000
         # Get a random position and stencil
         (pos, pos2, opacity, pixels) = getStencil()
         # Apply the stencil to a temporarily
@@ -143,7 +150,7 @@ function initialfill()
     # @sync makes sure the program will only continue once all theads are done.
     # @distibuted makes the for loop run on all threads
     # for all x
-    @sync @distributed for pos in shuffle(1:((size(img, 1)-stencilWidth) * (size(img, 2)-stencilHeight))) #shuffle(1:size(img, 1)-stencilWidth)
+    @inbounds @sync @distributed for pos in shuffle(1:((size(img, 1)-stencilWidth) * (size(img, 2)-stencilHeight))) #shuffle(1:size(img, 1)-stencilWidth)
         # for all y
         #for j in shuffle(1:size(img, 2)-stencilHeight)
             i = pos % (size(img, 1)-stencilWidth) + 1
