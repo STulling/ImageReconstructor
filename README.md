@@ -45,7 +45,9 @@ Any other stuff is also cool.
 * Fixing bugs (all threads loading stencils)
 
 ## Release History
-
+* 0.0.2 "Works on other machines" Edition
+  * Actual project environment thanks to Vexatos
+  * Automatic adjustment of max threads thanks to zachmatson
 * 0.0.1 "Works on my machine" Edition
   * Initial shitty script
 
