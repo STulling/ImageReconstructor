@@ -12,8 +12,8 @@ end
 
 # Constants
 imageFile = "melee.jpg"
-@everywhere stencilWidth = 24
-@everywhere stencilHeight = 24
+@everywhere stencilWidth = 64
+@everywhere stencilHeight = 64
 @everywhere stencilDirectory = "stencils"
 
 
@@ -23,7 +23,7 @@ imageFile = "melee.jpg"
     if (type == "stencil")
         return tmp
     else
-        result = SharedArray{Int64}(size(tmp))
+        result = SharedArray{UInt8}(size(tmp))
         result[:] = tmp[:]
         return result
     end
@@ -45,13 +45,13 @@ end
 # img contains the pixel data of the ground truth
 img = loadImage(imageFile, "image")
 # result is completely black right now but will be the reconstructed image
-result = SharedArray{Int64}(size(img));
+result = SharedArray{UInt8}(size(img));
 
 # Since I'm bad at Julia these are reconstructed for evey thread so there's probably
 # a lot of file reading on startup. I haven't bothered fixing it as it probably doesn't affect
 # performance during iteration. Maybe some CPU cache optimizations could be found if there is a way to share all
 # stencils between processes.
-@everywhere stencilData = [loadImage(string(stencilDirectory, "/", file), "stencil") for file in readdir(stencilDirectory)]
+@everywhere stencilData = [loadImage(string(stencilDirectory, "/", file), "stencil") for file in readdir(stencilDirectory) if occursin(r"\.(gif|jpe?g|png)$", file)]
 # Turn stencils into a list of tuples having 3 values
 # 1. The color data of the stencil
 # 2. The opacity data of the stencil
@@ -61,7 +61,7 @@ result = SharedArray{Int64}(size(img));
 
 @everywhere struct Stencil
     color::Array{UInt8, 3}
-    opacity::Array{UInt8, 3}
+    opacity::Array{Float64, 3}
     average::Array{Float64, 3}
 end
 
@@ -69,7 +69,7 @@ end
 [
     Stencil(
         stencil[:,:,1:3], 
-        repeat(convert(Array{UInt8}, stencil[:,:,4] / 255), outer = (1, 1, 3)), 
+        repeat(convert(Array{Float64}, stencil[:,:,4] / 255), outer = (1, 1, 3)), 
         reshape([
             Statistics.mean(stencil[:,:,1][stencil[:,:,4] .== 255])
             Statistics.mean(stencil[:,:,2][stencil[:,:,4] .== 255])
@@ -128,7 +128,7 @@ function genImage()
         # Get a random position and stencil
         (pos, pos2, opacity, pixels) = getStencil()
         # Apply the stencil to a temporarily
-        tmpresult = result[pos[1]:pos2[1], pos[2]:pos2[2], :] .* (1 .- opacity) .+ opacity .* pixels
+        tmpresult = floor.(UInt8, result[pos[1]:pos2[1], pos[2]:pos2[2], :] .* (1 .- opacity) .+ opacity .* pixels)
         # Check the old distance on that position of the image
         distance_old = msd(img[pos[1]:pos2[1], pos[2]:pos2[2], :], result[pos[1]:pos2[1], pos[2]:pos2[2], :])
         # Check the new distance on that position of the image
@@ -158,7 +158,7 @@ function initialfill()
             # Get the stenicl that corresponds to that location
             (opacity, pixels) = getStencil(i, j)
             # Just add it, no checking for improvements
-            result[i:i+stencilWidth-1, j:j+stencilHeight-1, :] = result[i:i+stencilWidth-1, j:j+stencilHeight-1, :] .* (1 .- opacity) .+ opacity .* pixels
+            result[i:i+stencilWidth-1, j:j+stencilHeight-1, :] = floor.(UInt8, result[i:i+stencilWidth-1, j:j+stencilHeight-1, :] .* (1 .- opacity) .+ opacity .* pixels)
         #end
     end
 end
