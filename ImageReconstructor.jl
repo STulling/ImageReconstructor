@@ -10,11 +10,22 @@ end
 # Apply imports to all threads
 @everywhere using Images, FileIO, Colors, ImageCore, SharedArrays, Statistics, Random
 
+using ArgParse
+s = ArgParseSettings()
+@add_arg_table s begin
+    "--image", "-i"
+    help = "the path to the image file to reconstruct"
+    required = true
+    "--stencils-dir", "-s"
+    help = "the path to the directory containing the stencils"
+    required = true
+end
+parsed_args = parse_args(ARGS, s)
+@eval @everywhere parsed_args = $parsed_args
+# get command line arguments and make available to all threads
 # Constants
-const imageFile = "melee.jpg"
-@everywhere const stencilWidth = 64
-@everywhere const stencilHeight = 64
-@everywhere const stencilDirectory = "stencils"
+const imageFile = parsed_args["image"]
+@everywhere const stencilDirectory = parsed_args["stencils-dir"]
 
 
 # Loads an Image into either an array or SharedArray, could be cleaned up
@@ -47,11 +58,11 @@ img = loadImage(imageFile, "image")
 # result is completely black right now but will be the reconstructed image
 result = SharedArray{UInt8}(size(img));
 
-# Since I'm bad at Julia these are reconstructed for evey thread so there's probably
-# a lot of file reading on startup. I haven't bothered fixing it as it probably doesn't affect
-# performance during iteration. Maybe some CPU cache optimizations could be found if there is a way to share all
-# stencils between processes.
-@everywhere const stencilData = [loadImage(string(stencilDirectory, "/", file), "stencil") for file in readdir(stencilDirectory) if occursin(r"\.(gif|jpe?g|png)$", file)]
+const stencilData = [loadImage(string(stencilDirectory, "/", file), "stencil") for file in readdir(stencilDirectory) if occursin(r"\.(gif|jpe?g|png)$", file)]
+@eval @everywhere const stencilData = $stencilData
+# get stencil dimensions, assuming they're all the same size
+@everywhere const stencilWidth = size(stencilData[1])[1]
+@everywhere const stencilHeight = size(stencilData[1])[2]
 # Turn stencils into a list of tuples having 3 values
 # 1. The color data of the stencil
 # 2. The opacity data of the stencil
@@ -65,7 +76,7 @@ result = SharedArray{UInt8}(size(img));
     average::Array{Float64, 3}
 end
 
-@everywhere const stencils = 
+const stencils = 
 [
     Stencil(
         stencil[:,:,1:3], 
@@ -78,6 +89,7 @@ end
     ) 
     for stencil in stencilData
 ];
+@eval @everywhere const stencils = $stencils
 
 # Chooses the optimal stencil based on a given target average color.
 # Maybe there's a better way to do this but it's fine imo
