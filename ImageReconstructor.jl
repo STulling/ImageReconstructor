@@ -14,18 +14,23 @@ using ArgParse
 s = ArgParseSettings()
 @add_arg_table s begin
     "--image", "-i"
-    help = "the path to the image file to reconstruct"
-    required = true
+        help = "the path to the image file to reconstruct"
+        required = true
     "--stencils-dir", "-s"
-    help = "the path to the directory containing the stencils"
-    required = true
+        help = "the path to the directory containing the stencils"
+        required = true
+    "--result", "-r"
+        help = "the path to the reconstructed image file"
+        default = "result.png"
+        required = false
 end
 parsed_args = parse_args(ARGS, s)
 @eval @everywhere parsed_args = $parsed_args
 # get command line arguments and make available to all threads
 # Constants
-const imageFile = parsed_args["image"]
+@everywhere const imageFile = parsed_args["image"]
 @everywhere const stencilDirectory = parsed_args["stencils-dir"]
+@everywhere const resultFile = parsed_args["result"]
 
 
 # Loads an Image into either an array or SharedArray, could be cleaned up
@@ -58,7 +63,7 @@ img = loadImage(imageFile, "image")
 # result is completely black right now but will be the reconstructed image
 result = SharedArray{UInt8}(size(img));
 
-const stencilData = [loadImage(string(stencilDirectory, "/", file), "stencil") for file in readdir(stencilDirectory) if occursin(r"\.(gif|jpe?g|png)$", file)]
+const stencilData = [loadImage(string(stencilDirectory, "/", file), "stencil") for file in readdir(stencilDirectory) if occursin(r"\.(gif|jpe?g|png|bmp)$", file)]
 @eval @everywhere const stencilData = $stencilData
 # get stencil dimensions, assuming they're all the same size
 @everywhere const stencilWidth = size(stencilData[1])[1]
@@ -179,7 +184,7 @@ println("Initial filling of the image to remove gaps, can take a long time")
 initialfill()
 println("starting random reconstruction of the image")
 genImage()
-save("result.png", to_img(result))
+save(resultFile, to_img(result))
 
 #= Use in case you want to use video
 for i in 1:length(readdir("Images"))

@@ -16,20 +16,31 @@ Instantiate the project environment:
 julia --project=@. -e "using Pkg; Pkg.instantiate()"
 ```
 
-If everything is set up, just edit some constants in ImageReconstructor.jl and run it
+If everything is set up, you can run the following in the command line.
 
 ```sh
-julia ImageReconstructor.jl
+julia ImageReconstructor.jl -i america.bmp -s stencils -r america_reconstructed.png
 ```
+* `-i` is for the image location (png, jpg, jpeg, and gif file formats accepted)
+* `-s` is for the stencils folder location
+* `-r` is for the result image location (_optional, defaults to `result.png`_)
+
 
 ## Usage example
 
-Add a stencil folder and an image to reconstruct.
-Then point the script to those files.
-And run it.
+The project includes a sample image and some sample stencils, in the `stencils` folder.
 
-There is some code at the bottom to use with video.
-You can probably figure it out yourself.
+![](america.bmp)
+
+![](stencils/red.bmp)
+![](stencils/white.bmp)
+![](stencils/blue.bmp)
+
+If everything is configured correctly, you should see the following image:
+
+![](result.png)
+
+There is some commented-out code for video applications included at the bottom of the file. This is untested/in need of further refinement.
 
 ## Contributing
 
