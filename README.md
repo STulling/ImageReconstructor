@@ -36,6 +36,10 @@ The project includes a sample image and some sample stencils, in the `stencils` 
 ![](stencils/white.bmp)
 ![](stencils/blue.bmp)
 
+If everything is configured correctly, you should see the following image:
+
+![](result.png)
+
 There is some commented-out code for video applications included at the bottom of the file. This is untested/in need of further refinement.
 
 ## Contributing
