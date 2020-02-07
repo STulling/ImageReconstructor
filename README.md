@@ -23,7 +23,7 @@ julia ImageReconstructor.jl -i america.bmp -s stencils -r america_reconstructed.
 ```
 * `-i` is for the image location (png, jpg, jpeg, and gif file formats accepted)
 * `-s` is for the stencils folder location
-* `-r` is for the result image location (_optional_)
+* `-r` is for the result image location (_optional, defaults to `result.png`_)
 
 
 ## Usage example
