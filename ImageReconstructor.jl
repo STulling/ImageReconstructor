@@ -58,7 +58,7 @@ img = loadImage(imageFile, "image")
 # result is completely black right now but will be the reconstructed image
 result = SharedArray{UInt8}(size(img));
 
-const stencilData = [loadImage(string(stencilDirectory, "/", file), "stencil") for file in readdir(stencilDirectory) if occursin(r"\.(gif|jpe?g|png)$", file)]
+const stencilData = [loadImage(string(stencilDirectory, "/", file), "stencil") for file in readdir(stencilDirectory) if occursin(r"\.(gif|jpe?g|png|bmp)$", file)]
 @eval @everywhere const stencilData = $stencilData
 # get stencil dimensions, assuming they're all the same size
 @everywhere const stencilWidth = size(stencilData[1])[1]
