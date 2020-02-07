@@ -23,6 +23,14 @@ s = ArgParseSettings()
         help = "the path to the reconstructed image file"
         default = "result.png"
         required = false
+    "--iterations"
+        help = "the number of iterations for placing random stencils"
+        default = 1000000
+        arg_type = Int
+        required = false
+    "--improve"
+        help = "Uses the result file and improves it"
+        action = :store_true
 end
 parsed_args = parse_args(ARGS, s)
 @eval @everywhere parsed_args = $parsed_args
@@ -31,6 +39,8 @@ parsed_args = parse_args(ARGS, s)
 @everywhere const imageFile = parsed_args["image"]
 @everywhere const stencilDirectory = parsed_args["stencils-dir"]
 @everywhere const resultFile = parsed_args["result"]
+@everywhere const iterations = parsed_args["iterations"]
+const improve = parsed_args["improve"]
 
 
 # Loads an Image into either an array or SharedArray, could be cleaned up
@@ -61,9 +71,13 @@ end
 # img contains the pixel data of the ground truth
 img = loadImage(imageFile, "image")
 # result is completely black right now but will be the reconstructed image
-result = SharedArray{UInt8}(size(img));
+if (improve)
+    result = loadImage(resultFile, "image")
+else
+    result = SharedArray{UInt8}(size(img));
+end
 
-const stencilData = [loadImage(string(stencilDirectory, "/", file), "stencil") for file in readdir(stencilDirectory) if occursin(r"\.(gif|jpe?g|png|bmp)$", file)]
+const stencilData = [loadImage(string(stencilDirectory, "/", file), "stencil") for file in readdir(stencilDirectory) if occursin(r"\.(jpe?g|png|bmp)$", file)]
 @eval @everywhere const stencilData = $stencilData
 # get stencil dimensions, assuming they're all the same size
 @everywhere const stencilWidth = size(stencilData[1])[1]
@@ -141,7 +155,7 @@ end
 function genImage()
     # @sync makes sure the program will only continue once all theads are done.
     # @distibuted makes the for loop run on all threads
-    @inbounds @sync @distributed for i in 1:1600000
+    @inbounds @sync @distributed for i in 1:iterations
         # Get a random position and stencil
         (pos, pos2, opacity, pixels) = getStencil()
         # Apply the stencil to a temporarily
@@ -166,22 +180,20 @@ end
 function initialfill()
     # @sync makes sure the program will only continue once all theads are done.
     # @distibuted makes the for loop run on all threads
-    # for all x
-    @inbounds @sync @distributed for pos in shuffle(1:((size(img, 1)-stencilWidth) * (size(img, 2)-stencilHeight))) #shuffle(1:size(img, 1)-stencilWidth)
-        # for all y
-        #for j in shuffle(1:size(img, 2)-stencilHeight)
-            i = pos % (size(img, 1)-stencilWidth) + 1
-            j = pos ÷ (size(img, 1)-stencilWidth) + 1
-            # Get the stenicl that corresponds to that location
-            (opacity, pixels) = getStencil(i, j)
-            # Just add it, no checking for improvements
-            result[i:i+stencilWidth-1, j:j+stencilHeight-1, :] = floor.(UInt8, result[i:i+stencilWidth-1, j:j+stencilHeight-1, :] .* (1 .- opacity) .+ opacity .* pixels)
-        #end
+    @inbounds @sync @distributed for pos in shuffle(1:((size(img, 1)-stencilWidth) * (size(img, 2)-stencilHeight)))
+        i = pos % (size(img, 1)-stencilWidth) + 1
+        j = pos ÷ (size(img, 1)-stencilWidth) + 1
+        # Get the stenicl that corresponds to that location
+        (opacity, pixels) = getStencil(i, j)
+        # Just add it, no checking for improvements
+        result[i:i+stencilWidth-1, j:j+stencilHeight-1, :] = floor.(UInt8, result[i:i+stencilWidth-1, j:j+stencilHeight-1, :] .* (1 .- opacity) .+ opacity .* pixels)
     end
 end
 
-println("Initial filling of the image to remove gaps, can take a long time")
-initialfill()
+if (!improve)
+    println("Initial filling of the image to remove gaps, can take a long time")
+    initialfill()
+end
 println("starting random reconstruction of the image")
 genImage()
 save(resultFile, to_img(result))
