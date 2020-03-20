@@ -47,6 +47,10 @@ const improve = parsed_args["improve"]
 @everywhere function loadImage(file, type)
     tmp = permuteddimsview(rawview(channelview(load(file))), (2,3,1))
     if (type == "stencil")
+		# Case: RGB
+		if size(tmp)[3] == 3
+			return cat(dims=3, tmp, convert(Array{UInt8}, 255 * ones(size(tmp)[1:2])))
+		end
         return tmp
     else
         result = SharedArray{UInt8}(size(tmp))
@@ -95,17 +99,17 @@ const stencilData = [loadImage(string(stencilDirectory, "/", file), "stencil") f
     average::Array{Float64, 3}
 end
 
-const stencils = 
+const stencils =
 [
     Stencil(
-        stencil[:,:,1:3], 
-        repeat(convert(Array{Float64}, stencil[:,:,4] / 255), outer = (1, 1, 3)), 
+        stencil[:,:,1:3],
+        repeat(convert(Array{Float64}, stencil[:,:,4] / 255), outer = (1, 1, 3)),
         reshape([
             Statistics.mean(stencil[:,:,1][stencil[:,:,4] .== 255])
             Statistics.mean(stencil[:,:,2][stencil[:,:,4] .== 255])
             Statistics.mean(stencil[:,:,3][stencil[:,:,4] .== 255])
         ], 1, 1, 3)
-    ) 
+    )
     for stencil in stencilData
 ];
 @eval @everywhere const stencils = $stencils
