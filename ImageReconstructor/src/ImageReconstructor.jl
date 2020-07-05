@@ -216,12 +216,10 @@ function reconstructImage(args::ReconstructionArguments)::Nothing
     println("Loading all files...")
     resourceData::ResourceData = getData(args)
     println("Loaded all files")
-    #if (!improve)
-    #    println("Initial filling of the image to remove gaps, can take a long time")
-    #   initialfill()
-    #end
-    println("Initial filling of the image to remove gaps, can take a long time")
-    initialfill(resourceData)
+    if (!resourceData.improve)
+        println("Initial filling of the image to remove gaps, can take a long time")
+        initialfill(resourceData)
+    end
     println("starting random reconstruction of the image")
     genImage(resourceData)
     println("Saving result...")

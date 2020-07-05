@@ -15,6 +15,7 @@ struct ResourceData
     stencilWidth::Int64
     stencilHeight::Int64
     iterations::Int64
+    improve::Bool
 end
 
 # Loads an Image into the proper format
@@ -58,7 +59,8 @@ end
 function getData(args::ReconstructionArguments)::ResourceData
     println("Loading image...")
     image = load(args.inputFile)
-    groundTruth = convertReadable(image)
+    groundTruth = convertReadable(image)[:, :, 1:3]
+    println(size(groundTruth))
     println("Loaded image")
     println("Loading stencils...")
     stencils = loadStencils(args.stencilFolder)
@@ -81,6 +83,7 @@ function getData(args::ReconstructionArguments)::ResourceData
         stencilWidth,
         stencilHeight,
         args.iterations,
+        args.improve
     )
 end
 
