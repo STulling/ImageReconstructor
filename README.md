@@ -7,6 +7,8 @@ This program turns an ordinary image and one or multiple stencils into an image 
 
 ## Installation
 
+CURRENT COMMIT IS BROKEN USE PREVIOUS COMMIT
+
 Any OS I guess:
 
 Install [Julia](https://julialang.org/)
