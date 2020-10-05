@@ -27,17 +27,13 @@ Any OS I guess:
 
 Install [Julia](https://julialang.org/)
 
-In order to use multithreading (HIGHLY recommended), set the environment variable:
-```sh
-set JULIA_NUM_THREADS=x
-```
-Where x is the amount of threads that you can use. For most computers it's double the amount of cores. So a 4 core processor can use 8 threads.
-
+Make sure Julia is accessible in your system path. If you don't know how to, please follow this guide: [Adding Julia to PATH](https://julialang.org/downloads/platform/)
 
 Launch the script from the command line.
 ```sh
-julia CLI.jl -i shrek.jpg -s stencils -r result.png --iterations 10000
+julia --threads 1 CLI.jl -i shrek.jpg -s stencils -r result.png --iterations 10000
 ```
+* `--threads` gives the amount of threads the script can use. Usually this is the amount of cores your CPU has times 2. It's highly recommended to change this for your specific PC.
 * `-i` is for the image location (png, jpg, jpeg, and gif file formats accepted)
 * `-s` is for the stencils folder location
 * `-r` is for the result image location (_optional, defaults to `result.png`_)
@@ -46,7 +42,7 @@ julia CLI.jl -i shrek.jpg -s stencils -r result.png --iterations 10000
 
 Or use:
 ```sh
-julia StaticInterface.jl
+julia --threads 1 StaticInterface.jl
 ```
 Where you need to edit the file to present all folders and options.
 

@@ -212,6 +212,7 @@ end
 
 function reconstructImage(args::ReconstructionArguments)::Nothing
     println("Loading all files...")
+    println(string("Using ", Threads.nthreads(), " threads"))
     resourceData::ResourceData = getData(args)
     println("Loaded all files")
     if (!resourceData.improve)
