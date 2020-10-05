@@ -1,4 +1,7 @@
-using ArgParse, ReconstructionArguments, ImageReconstructor
+using Pkg
+Pkg.activate(@__DIR__)
+include("ImageReconstructor.jl")
+using ArgParse
 s = ArgParseSettings()
 @add_arg_table s begin
     "--image", "-i"

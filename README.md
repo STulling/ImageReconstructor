@@ -1,13 +1,27 @@
 # Image Reconstructor
-> Reconstructs images using other images
 
 This program turns an ordinary image and one or multiple stencils into an image created solely with those stencils.
 
-![](header.png)
+## Usage example
+
+The project includes a sample image and some sample stencils, in the `stencils` folder.
+
+![](shrek.jpg)
+
+![](stencils/white.bmp)
+![](stencils/blue.bmp)
+![](stencils/cat.png)
+![](stencils/dog.png)
+![](stencils/green.png)
+![](stencils/grey.jpg)
+![](stencils/hat.png)
+![](stencils/yellow.png)
+
+If everything is configured correctly, you should see the following image:
+
+![](result.png)
 
 ## Installation
-
-CURRENT COMMIT IS BROKEN USE PREVIOUS COMMIT
 
 Any OS I guess:
 
@@ -22,33 +36,19 @@ Where x is the amount of threads that you can use. For most computers it's doubl
 
 Launch the script from the command line.
 ```sh
-julia CLI.jl -i america.bmp -s stencils -r america_reconstructed.png
+julia CLI.jl -i shrek.jpg -s stencils -r result.png --iterations 10000
 ```
 * `-i` is for the image location (png, jpg, jpeg, and gif file formats accepted)
 * `-s` is for the stencils folder location
 * `-r` is for the result image location (_optional, defaults to `result.png`_)
+* `--iterations` if the amount of extra stencils to try and place after the initial fill
+* `--improve` can be also added if you want to improve the resulting image without starting from scratch.
 
 Or use:
 ```sh
 julia StaticInterface.jl
 ```
 Where you need to edit the file to present all folders and options.
-
-## Usage example
-
-The project includes a sample image and some sample stencils, in the `stencils` folder.
-
-![](america.bmp)
-
-![](stencils/red.bmp)
-![](stencils/white.bmp)
-![](stencils/blue.bmp)
-
-If everything is configured correctly, you should see the following image:
-
-![](result.png)
-
-There is some commented-out code for video applications included at the bottom of the file. This is untested/in need of further refinement.
 
 ## Contributing
 
@@ -61,9 +61,10 @@ Any other stuff is also cool.
 * Speed up are always great
 * Better video support
 * Live preview?
-* Fixing bugs (all threads loading stencils)
 
 ## Release History
+* 0.1.1 "Fixed the breaking" Edition
+  * It now doesn't use a module (Julia did not make this less painful)
 * 0.1.0 "Might have broken everything for the sake of speed" Edition
   * Optimized everything for speed
   * It now uses a module (Julia pls make this less painful)
@@ -76,6 +77,6 @@ Any other stuff is also cool.
 
 ## Contributors
 
-Simon Tulling – simon.tulling99@gmail.com – u/JanDoedelGaming
+Simon381#9384 - u\JanDoedelGaming
 
 Don't hesitate to contact me or make an issue for any issues with the code.

@@ -1,8 +1,8 @@
 using Pkg
 Pkg.activate(@__DIR__)
-using ImageReconstructor
+include("ImageReconstructor.jl")
 println("Loading Static Interface...")
-reconstructionArguments = ImageReconstructor.ReconstructionArguments(
+reconstructionArguments = ReconstructionArguments(
     "america.bmp",
     "stencils",
     "result.png",
@@ -11,4 +11,4 @@ reconstructionArguments = ImageReconstructor.ReconstructionArguments(
 )
 println("Loaded Static Interface")
 println("Starting ImageReconstructor...")
-ImageReconstructor.reconstructImage(reconstructionArguments)
+reconstructImage(reconstructionArguments)
